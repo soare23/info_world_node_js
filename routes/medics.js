@@ -33,6 +33,7 @@ router.post('/csv-upload', upload.single('csv'), (req, res) => {
           });
           return obj;
         });
+
         let hospitalsByMedic = {};
 
         medics.forEach((medic) => {
@@ -43,7 +44,6 @@ router.post('/csv-upload', upload.single('csv'), (req, res) => {
             };
 
             if (medic.active === 'true') {
-              // push hospital to the list of hospitals of the medic with id 'medic.id' where he is active
               hospitalsByMedic[medicName].hospitals.push(medic.nameId);
             }
           }
@@ -56,7 +56,7 @@ router.post('/csv-upload', upload.single('csv'), (req, res) => {
 
       res.status(200).send('CSV FILE READ');
     } else {
-      // standard JSON
+      // JSON
       if (!req.body.id || req.body.resourceType !== 'Practitioner') {
         console.log('You are not authorized to access this.');
         res.status(401).send('You are not authorized to access this.');

@@ -19,41 +19,11 @@ router.post('/csv-upload', upload.single('csv'), (req, res) => {
     // CSV file
     if (req.headers['content-type'].includes('multipart/form-data')) {
       let content = fs.readFileSync(req.file.path, 'binary');
-      fs.unlink(req.file.path, () => {
-        const rows = content.split('\n');
-        const rawData = rows.map((d) => d.split(','));
-        const headers = rawData[0];
-        const data = rawData.slice(1);
-        const medics = data.map((row) => {
-          const obj = {};
-          headers.forEach((h, i) => {
-            let trimmed = h.trim();
-            let cammelCase = trimmed.charAt(0).toLowerCase() + trimmed.slice(1);
-            obj[cammelCase] = row[i].trim();
-          });
-          return obj;
-        });
+      const medics = parseCSV(content, req.file.path);
 
-        let hospitalsByMedic = {};
+      // verify active hopsital by medic and show data
 
-        medics.forEach((medic) => {
-          if (tokenObject.facility.includes(medic.facilityId)) {
-            let medicName = medic.familyName + ' ' + medic.givenName;
-            hospitalsByMedic[medicName] = hospitalsByMedic[medicName] || {
-              hospitals: [],
-            };
-
-            if (medic.active === 'true') {
-              hospitalsByMedic[medicName].hospitals.push(medic.nameId);
-            }
-          }
-        });
-
-        for (const [key, value] of Object.entries(hospitalsByMedic)) {
-          console.log(key + ': ' + value.hospitals);
-        }
-      });
-
+      logHospitalsByMedic(medics, tokenObject.facility);
       res.status(200).send('CSV FILE READ');
     } else {
       // JSON
@@ -81,5 +51,57 @@ router.post('/csv-upload', upload.single('csv'), (req, res) => {
     res.status(401).send('You are not authorized to access this.');
   }
 });
+
+// parse CSV date to Objects
+
+function parseCSV(csv, path) {
+  const rows = csv.split('\n');
+  const rawData = rows.map((d) => d.split(','));
+  const headers = rawData[0];
+  const data = rawData.slice(1);
+  const parsedData = data.map((row) => {
+    const obj = {};
+    headers.forEach((h, i) => {
+      let trimmed = h.trim();
+      let cammelCase = trimmed.charAt(0).toLowerCase() + trimmed.slice(1);
+      obj[cammelCase] = row[i].trim();
+    });
+    return obj;
+  });
+
+  fs.unlink(path, () => {});
+
+  return parsedData;
+}
+
+// verify active hopsital by medic and show data
+function logHospitalsByMedic(medics, facility) {
+  let hospitalsByMedic = {};
+
+  medics.forEach((medic) => {
+    if (facility.includes(medic.facilityId)) {
+      let name = medic.familyName + ' ' + medic.givenName;
+      hospitalsByMedic[medic.iD] = hospitalsByMedic[medic.iD] || {
+        name,
+        hospitals: [],
+      };
+
+      if (hospitalsByMedic[medic.iD].name !== name) {
+        console.log(
+          `There is already a medic saved with this id ${medic.iD} with a different name`
+        );
+      }
+
+      if (medic.active === 'true') {
+        hospitalsByMedic[medic.iD].hospitals.push(medic.nameId);
+      }
+    }
+  });
+
+  // show data
+  for (const [key, value] of Object.entries(hospitalsByMedic)) {
+    console.log(value.name + ': ' + value.hospitals);
+  }
+}
 
 module.exports = router;

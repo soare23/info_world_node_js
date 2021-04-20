@@ -43,6 +43,6 @@ ID, FamilyName, GivenName, FacilityId, SystemId, NameId, Active
 2, Ionescu, Catalin, 12, http://ro.gov/NPI, Spital Tulcea, true
 ```
 
-The key of the sent CSV file has to be CSV, like in the example below:
+The key of the sent CSV file has to be csv, like in the example below:
 
 ![request-key](https://i.imgur.com/jL2Wbzy.png)

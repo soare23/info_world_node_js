@@ -52,7 +52,7 @@ router.post('/csv-upload', upload.single('csv'), (req, res) => {
   }
 });
 
-// parse CSV date to Objects
+// parse CSV data to Objects
 
 function parseCSV(csv, path) {
   const rows = csv.split('\n');
